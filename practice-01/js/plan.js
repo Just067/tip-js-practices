@@ -2,7 +2,7 @@
 
 const totalTasks = 10;
 const completedTasks = 7;
-const dailyLimit = 4;
+const dailyLimit = 3;
 
 if (typeof totalTasks !== 'number' || typeof completedTasks !== 'number') {
     console.log("Ошибка: вместо числа передана строка.");

@@ -355,6 +355,87 @@ check("35. Работа с другим набором, без зависимо�
 //   assert.deepEqual(result, ...);
 // });
 
+check("Собственная 1. Добавление после удаления сохраняет порядок и иммутабельность", () => {
+  const initial = fixture();
+  const initialSnapshot = copyTasks(initial);
+
+  // Сначала удаляем среднюю запись — получаем [1, 4, 10]
+  const afterRemove = expectTasks(removeTask(initial, 7));
+  const afterRemoveSnapshot = copyTasks(afterRemove);
+  assert.deepEqual(afterRemove.map((t) => t.id), [1, 4, 10]);
+
+  // Затем добавляем новую запись в конец — получаем [1, 4, 10, 20]
+  const afterAdd = expectTasks(addTask(afterRemove, 20, "Новая задача", "low"));
+  assert.deepEqual(afterAdd.map((t) => t.id), [1, 4, 10, 20]);
+  assert.deepEqual(afterAdd[3], {
+    id: 20, title: "Новая задача", completed: false, priority: "low",
+  });
+
+  // Промежуточные состояния не изменились
+  assert.deepEqual(initial, initialSnapshot);
+  assert.deepEqual(afterRemove, afterRemoveSnapshot);
+  assert.notEqual(afterAdd, afterRemove);
+  assert.notEqual(afterRemove, initial);
+});
+
+check("Собственная 2. Изменение первой и последней записи не затрагивает соседние", () => {
+  const tasks = fixture();
+  const before = copyTasks(tasks);
+
+  // Меняем первую запись (id=1, true → false)
+  const afterFirst = expectTasks(setTaskCompleted(tasks, 1, false));
+  assert.equal(afterFirst[0].completed, false);
+  assert.notEqual(afterFirst[0], tasks[0]);       // новый объект выбранной записи
+  assert.deepEqual(afterFirst[1], tasks[1]);      // соседние записи сохранены
+  assert.deepEqual(afterFirst[2], tasks[2]);
+  assert.deepEqual(afterFirst[3], tasks[3]);
+
+  // Меняем последнюю запись (id=10)
+  const afterLast = expectTasks(renameTask(afterFirst, 10, "Финальное название"));
+  assert.equal(afterLast[3].title, "Финальное название");
+  assert.equal(afterLast[3].completed, tasks[3].completed);
+  assert.equal(afterLast[3].priority, tasks[3].priority);
+  assert.notEqual(afterLast[3], afterFirst[3]);   // новый объект изменённой записи
+  assert.notEqual(afterLast, afterFirst);         // новый массив
+
+  // Исходный массив и его объекты не мутированы
+  assert.deepEqual(tasks, before);
+});
+
+check("Собственная 3. Цепочка из пяти операций с проверкой каждого состояния", () => {
+  let current = fixture();
+  const initialSnapshot = copyTasks(current);
+
+  // Шаг 1. Удалить id=1
+  current = expectTasks(removeTask(current, 1));
+  assert.deepEqual(current.map((t) => t.id), [4, 7, 10]);
+
+  // Шаг 2. Добавить id=99
+  current = expectTasks(addTask(current, 99, "Служебная задача", "low"));
+  assert.deepEqual(current.map((t) => t.id), [4, 7, 10, 99]);
+
+  // Шаг 3. Установить completed=true для id=99
+  current = expectTasks(setTaskCompleted(current, 99, true));
+  assert.deepEqual(getTaskStats(current),
+    { total: 4, completed: 2, pending: 2, progress: 50 });
+
+  // Шаг 4. Переименовать id=4, остальные поля сохранить
+  current = expectTasks(renameTask(current, 4, "Обновлённая модель задач"));
+  const renamed = findTaskById(current, 4);
+  assert.equal(renamed.title, "Обновлённая модель задач");
+  assert.equal(renamed.priority, "high");
+  assert.equal(renamed.completed, false);
+
+  // Шаг 5. Удалить id=7
+  current = expectTasks(removeTask(current, 7));
+  assert.deepEqual(current.map((t) => t.id), [4, 10, 99]);
+  assert.deepEqual(getTaskStats(current),
+    { total: 3, completed: 2, pending: 1, progress: (2 / 3) * 100 });
+
+  // Исходный массив не тронут на всём протяжении цепочки
+  assert.deepEqual(fixture(), initialSnapshot);
+});
+
 console.log(`\nПроверок пройдено: ${passed}; не пройдено: ${failed}.`);
 if (failed > 0) {
   process.exitCode = 1;
