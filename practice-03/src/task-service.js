@@ -1,8 +1,3 @@
-// Заготовка модуля. throw ниже отмечает отсутствие реализации,
-// а не способ обработки некорректных данных в готовом решении.
-// Для предусмотренных ошибок необходимо возвращать { ok: false, error: "..." }.
-// console.log(), prompt(), document и чтение внешнего состояния здесь не нужны.
-
 const TITLE_MAX_LENGTH = 100;
 
 export function createTask(id, title, priority = "medium") {

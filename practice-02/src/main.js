@@ -39,6 +39,7 @@ if (total === 0) {
 console.log("\n--- Шаг 2. Чтение ---");
 console.log("findTaskById(4):", findTaskById(currentTasks, 4));
 console.log("getPendingTasks:", getPendingTasks(currentTasks));
+console.log("getPendingTasks:", getPendingTasks([]));
 console.log("getTaskTitles:", getTaskTitles(currentTasks));
 
 // --- Шаг 3. Добавление ---
@@ -67,6 +68,14 @@ if (completeResult.ok) {
   console.log("Успех. Сводка:", getTaskStats(currentTasks));
 } else {
   console.log("Ошибка:", completeResult.error);
+}
+
+const completeResult2 = setTaskCompleted(currentTasks, 777, true);
+if (completeResult2.ok) {
+  currentTasks = completeResult2.tasks;
+  console.log("Успех. Сводка:", getTaskStats(currentTasks));
+} else {
+  console.log("Ошибка:", completeResult2.error);
 }
 
 // --- Шаг 5. Переименовать id=10 ---

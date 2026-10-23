@@ -1,7 +1,7 @@
 "use strict";
 
-const totalTasks = 10;
-const completedTasks = 7;
+const totalTasks = 5;
+const completedTasks = 6;
 
 if (typeof totalTasks !== 'number' || typeof completedTasks !== 'number') {
     console.log("Ошибка: вместо числа передана строка.");

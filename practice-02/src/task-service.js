@@ -44,7 +44,6 @@ export function findTaskById(tasks, id) {
   return tasks.find((task) => task.id === id);
 }
 
-// Возвращает МАССИВ ЗАДАЧ, а не идентификаторов.
 export function getPendingTasks(tasks) {
   return tasks.filter((task) => !task.completed);
 }
